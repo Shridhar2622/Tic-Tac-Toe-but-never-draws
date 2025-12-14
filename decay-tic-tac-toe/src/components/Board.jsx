@@ -1,6 +1,6 @@
 import Cell from "./Cell";
 
-export default function Board({ board, onMove, spawnParticles }) {
+export default function Board({ board, onMove, spawnParticles, blinkIndex }) {
   return (
     <div className="board">
       {board.map((value, i) => (
@@ -10,6 +10,7 @@ export default function Board({ board, onMove, spawnParticles }) {
           value={value}
           onClick={() => onMove(i)}
           spawnParticles={spawnParticles}
+          isBlinking={blinkIndex === i}
         />
       ))}
     </div>

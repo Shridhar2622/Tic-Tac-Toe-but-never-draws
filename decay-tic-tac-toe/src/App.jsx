@@ -11,6 +11,7 @@ export default function App() {
   const [mode, setMode] = useState("local"); // "local" | "ai" | "online"
   const [matchNames, setMatchNames] = useState({ X: "Player X", O: "Player O" }); 
   const [musicEnabled, setMusicEnabled] = useState(true); 
+  const [difficulty, setDifficulty] = useState("easy"); // "easy" | "hard" 
 
   // 🎵 Global Sound Manager
   const sounds = useMemo(() => createSounds(), []);
@@ -19,79 +20,32 @@ export default function App() {
   useEffect(() => {
     const unlockAudio = () => {
       if (musicEnabled && sounds.music.paused) {
-        sounds.music.play().catch(e => console.log("Audio unlock failed", e));
+        sounds.music.play()
+            .then(() => {}) // Silent success
+            .catch(e => {}); // Silent failure (will retry)
       }
-      // Remove listener after first interaction
-      window.removeEventListener("click", unlockAudio);
-      window.removeEventListener("keydown", unlockAudio);
+      // Remove listeners only if audio actually starts playing
+      if (!sounds.music.paused) {
+          window.removeEventListener("pointerdown", unlockAudio);
+          window.removeEventListener("keydown", unlockAudio);
+      }
     };
 
-    window.addEventListener("click", unlockAudio);
+    window.addEventListener("pointerdown", unlockAudio);
     window.addEventListener("keydown", unlockAudio);
 
-    return () => {
-      window.removeEventListener("click", unlockAudio);
-      window.removeEventListener("keydown", unlockAudio);
-    };
-  }, [musicEnabled, sounds]);
-
-  useEffect(() => {
+    // Initial attempt or toggle update
     if (musicEnabled) {
-        const playPromise = sounds.music.play();
-        if (playPromise !== undefined) {
-            playPromise.catch(e => {
-                console.log("Autoplay prevented. Waiting for interaction.");
-                // We don't force it here, the interaction listener will catch it.
-            });
-        }
+        sounds.music.play().catch(() => console.log("Autoplay blocked. Waiting for interaction."));
     } else {
         sounds.music.pause();
     }
-  }, [musicEnabled, sounds]);
 
-  if (!playerName) {
-      return (
-        <>
-            <Welcome onComplete={setPlayerName} />
-            {/* Show Audio Toggle even on Welcome */}
-            <button 
-                onClick={() => setMusicEnabled(!musicEnabled)}
-                style={{
-                    position: "fixed",
-                    bottom: "20px",
-                    right: "20px",
-                    zIndex: 9999,
-                    background: "rgba(0, 0, 0, 0.6)",
-                    backdropFilter: "blur(10px)",
-                    border: "1px solid rgba(255, 255, 255, 0.2)",
-                    borderRadius: "50px",
-                    cursor: "pointer",
-                    padding: "10px 15px",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "8px",
-                    color: "white",
-                    fontSize: "0.9rem",
-                    fontWeight: "bold",
-                    boxShadow: "0 4px 15px rgba(0,0,0,0.3)",
-                    transition: "all 0.3s ease"
-                }}
-            >
-                {musicEnabled ? (
-                    <>
-                        <img width="20" height="20" src="https://img.icons8.com/ios/50/high-volume--v1.png" alt="Music On" style={{ filter: "invert(1)" }} />
-                        <span>Music On</span>
-                    </>
-                ) : (
-                    <>
-                        <img width="20" height="20" src="https://img.icons8.com/ios/50/mute--v1.png" alt="Music Off" style={{ filter: "invert(0.5)" }} />
-                        <span style={{ color: "#aaa" }}>Music Off</span>
-                    </>
-                )}
-            </button>
-        </>
-      );
-  }
+    return () => {
+      window.removeEventListener("pointerdown", unlockAudio);
+      window.removeEventListener("keydown", unlockAudio);
+    };
+  }, [musicEnabled, sounds]);
 
   function startGame(selectedMode, customNames = null) {
     setMode(selectedMode);
@@ -115,10 +69,14 @@ export default function App() {
 
   return (
     <div className="app">
-      {view === "home" ? (
+      {!playerName ? (
+         <Welcome onComplete={setPlayerName} />
+      ) : view === "home" ? (
         <Home 
             onStart={startGame} 
             playerName={playerName} 
+            difficulty={difficulty}
+            setDifficulty={setDifficulty}
         />
       ) : (
         <Game 
@@ -128,10 +86,11 @@ export default function App() {
             setPlayerNames={setMatchNames} 
             myIdentity={playerName}
             sounds={sounds}
+            difficulty={difficulty}
         />
       )}
 
-      {/* 🎵 Persistent Global Audio Toggle */}
+      {/* 🎵 Persistent Global Audio Toggle (Single Instance) */}
       <button 
         onClick={() => setMusicEnabled(!musicEnabled)}
         style={{

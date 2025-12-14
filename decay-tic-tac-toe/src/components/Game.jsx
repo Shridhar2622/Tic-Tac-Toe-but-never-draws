@@ -7,20 +7,21 @@ import { createSounds } from "../game/sounds";
 import { createEffects } from "../game/effects";
 import "../styles/board.css";
 
-export default function Game({ mode, onBack, playerNames, setPlayerNames, myIdentity, sounds }) {
+export default function Game({ mode, onBack, playerNames, setPlayerNames, myIdentity, sounds, difficulty }) {
   // 🔹 game state
   const [board, setBoard] = useState(Array(9).fill(null));
   const [moves, setMoves] = useState([]);
   const [currentPlayer, setCurrentPlayer] = useState("X");
   const [winner, setWinner] = useState(null);
   
+  // 🔹 Decay Warning Logic
+  const blinkIndex = (difficulty === "easy" && moves.length >= 6) ? moves[0].index : null;
+  
   // 🔹 online state
   const [roomId, setRoomId] = useState(null);
   const [joinId, setJoinId] = useState("");
-  // const [musicEnabled, setMusicEnabled] = useState(false); // REMOVED local state
 
-// 🔹 resources
-  // const sounds = useMemo(() => createSounds(), []); // ❌ Use global sounds
+  // 🔹 resources
   const effects = useMemo(() => createEffects(), []);
 
   // 🔹 refs for animation
@@ -53,7 +54,7 @@ export default function Game({ mode, onBack, playerNames, setPlayerNames, myIden
   useLayoutEffect(() => {
     if (winner && sounds.winSound) {
         sounds.winSound.currentTime = 0;
-        sounds.winSound.play().catch(e => console.log("Win sound error", e));
+        sounds.winSound.play().catch(() => {}); // Silent catch
     }
   }, [winner, sounds]);
 
@@ -147,34 +148,7 @@ export default function Game({ mode, onBack, playerNames, setPlayerNames, myIden
                 </div>
 
                 {/* Audio Toggle in Lobby */}
-                <button 
-                    onClick={toggleMusic}
-                    style={{ 
-                        background: "transparent", 
-                        border: "1px solid rgba(255,255,255,0.3)", 
-                        borderRadius: "50px",
-                        cursor: "pointer", 
-                        padding: "8px 16px",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                        margin: "1rem auto 0",
-                        color: "#ddd",
-                        fontSize: "0.9rem"
-                    }}
-                >
-                    {musicEnabled ? (
-                        <>
-                            <img width="20" height="20" src="https://img.icons8.com/ios/50/high-volume--v1.png" alt="Music On" style={{ filter: "invert(1)" }} />
-                            <span>Music On</span>
-                        </>
-                    ) : (
-                        <>
-                            <img width="20" height="20" src="https://img.icons8.com/ios/50/mute--v1.png" alt="Music Off" style={{ filter: "invert(0.5)" }} />
-                            <span>Music Off</span>
-                        </>
-                    )}
-                </button>
+
 
                 <button onClick={onBack} style={{ background: "transparent", color: "#666", marginTop: "1rem", border: "none", cursor: "pointer" }}>
                     ← Back to Home
@@ -209,7 +183,16 @@ export default function Game({ mode, onBack, playerNames, setPlayerNames, myIden
               </p>
           )}
 
-          <p className="subtitle">
+          <p style={{
+            fontSize: "1.8rem",
+            fontWeight: "bold",
+            marginTop: "0.5rem",
+            color: winner ? "#FFD700" : (currentPlayer === "X" ? "#00ffff" : "#ff4d4d"),
+            textShadow: winner 
+                ? "0 0 20px rgba(255, 215, 0, 0.6)" 
+                : (currentPlayer === "X" ? "0 0 20px rgba(0, 255, 255, 0.6)" : "0 0 20px rgba(255, 77, 77, 0.6)"),
+            transition: "all 0.3s ease"
+          }}>
             {winner ? `${winnerName} Wins!` : `${currentName}'s Chance`}
           </p>
         </header>
@@ -218,7 +201,14 @@ export default function Game({ mode, onBack, playerNames, setPlayerNames, myIden
             transition: "all 0.5s ease",
             borderRadius: "10px",
             // Glow effect based on current player
-            boxShadow: !winner ? (currentPlayer === "X" ? "0 0 30px rgba(0, 255, 255, 0.3)" : "0 0 30px rgba(255, 0, 0, 0.3)") : "none"
+            boxShadow: !winner 
+                ? (currentPlayer === "X" 
+                    ? "0 0 50px rgba(0, 255, 255, 0.4), 0 0 20px rgba(0, 255, 255, 0.2) inset" 
+                    : "0 0 50px rgba(255, 77, 77, 0.4), 0 0 20px rgba(255, 77, 77, 0.2) inset") 
+                : "none",
+            border: !winner
+                ? (currentPlayer === "X" ? "2px solid rgba(0, 255, 255, 0.5)" : "2px solid rgba(255, 77, 77, 0.5)")
+                : "none"
         }}>
           {/* Only show board if offline, ai, OR (online and in room) */}
           {(mode !== "online" || roomId) && (
@@ -226,6 +216,7 @@ export default function Game({ mode, onBack, playerNames, setPlayerNames, myIden
                 board={board}
                 onMove={game.onMove}
                 spawnParticles={effects.spawnParticles}
+                blinkIndex={blinkIndex}
               />
           )}
         </div>

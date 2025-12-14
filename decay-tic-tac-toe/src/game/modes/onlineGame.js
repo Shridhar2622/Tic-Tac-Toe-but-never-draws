@@ -21,12 +21,10 @@ export function createOnlineGame({ effects, roomId, myIdentity, socket }) {
   }
 
   function createRoom() {
-    console.log("Emit create-room", { hostName: myIdentity });
     socket.emit("create-room", { hostName: myIdentity });
   }
 
   function joinRoom(id) {
-    console.log("Emit join-room", { roomId: id, playerName: myIdentity });
     socket.emit("join-room", { roomId: id, playerName: myIdentity });
   }
 
@@ -44,15 +42,7 @@ export function setupOnlineListeners(socket, config) {
   const { xSound, oSound, popSound } = sounds || {};
   const { spawnParticles } = effects || {};
 
-  function handleRoomCreated(room) {
-    console.log("Room Created:", room.id);
-    if (setRoomId) setRoomId(room.id);
-    setBoard(room.board);
-    setMoves(room.moves);
-    setCurrentPlayer(room.currentPlayer);
-    setWinner(room.winner);
-    if (setPlayerNames && room.names) setPlayerNames(room.names);
-  }
+
 
   function handleRoomUpdated(room) {
     console.log("Room Updated/Joined:", room.id);

@@ -6,7 +6,8 @@ export default function Cell({
   onClick,
   index,
   spawnParticles,
-  isWinning // 👈 NEW
+  isWinning,
+  isBlinking // 👈 NEW
 }) {
   const cellRef = useRef(null);
   const symbolRef = useRef(null);
@@ -39,7 +40,7 @@ export default function Cell({
   return (
     <div
       ref={cellRef}
-      className={`cell ${isWinning ? "cell-win" : ""}`} // 👈 HERE
+      className={`cell ${isWinning ? "cell-win" : ""} ${isBlinking ? "blink" : ""}`}
       data-index={index}
       onClick={onClick}
     >
