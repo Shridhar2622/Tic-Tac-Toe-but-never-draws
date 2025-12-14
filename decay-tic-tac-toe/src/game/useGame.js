@@ -13,12 +13,23 @@ export function useGame(mode, config) {
 
   const socket = useMemo(() => (mode === "online" ? io("http://localhost:4000") : null), [mode]);
 
+  // 1. Connection Lifecycle (Only runs when mode changes)
+  useEffect(() => {
+    if (mode === "online" && socket) {
+      if (!socket.connected) socket.connect();
+      return () => {
+        socket.disconnect();
+      };
+    }
+  }, [mode, socket]);
+
+  // 2. Event Listener Lifecycle (Runs when config/state changes)
   useEffect(() => {
     if (mode === "online" && socket) {
       const cleanup = setupOnlineListeners(socket, config);
       return () => {
         cleanup();
-        socket.disconnect();
+        // ❌ DO NOT disconnect socket here. Ideally, listeners update without breaking connection.
       };
     }
   }, [mode, socket, config]);

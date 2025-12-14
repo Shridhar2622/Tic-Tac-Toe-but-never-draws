@@ -114,6 +114,8 @@ export default function Home({ onStart, playerName }) {
                 <p style={{ margin: "5px 0 0 0", color: "#888", fontSize: "0.9rem" }}>Real-time Multiplayer</p>
              </div>
         </SpotlightCard>
+
+
       </div>
     </div>
   );

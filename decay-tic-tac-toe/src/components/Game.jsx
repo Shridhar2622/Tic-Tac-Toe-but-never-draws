@@ -7,7 +7,7 @@ import { createSounds } from "../game/sounds";
 import { createEffects } from "../game/effects";
 import "../styles/board.css";
 
-export default function Game({ mode, onBack, playerNames, setPlayerNames, myIdentity }) {
+export default function Game({ mode, onBack, playerNames, setPlayerNames, myIdentity, sounds }) {
   // 🔹 game state
   const [board, setBoard] = useState(Array(9).fill(null));
   const [moves, setMoves] = useState([]);
@@ -17,10 +17,10 @@ export default function Game({ mode, onBack, playerNames, setPlayerNames, myIden
   // 🔹 online state
   const [roomId, setRoomId] = useState(null);
   const [joinId, setJoinId] = useState("");
-  const [musicEnabled, setMusicEnabled] = useState(false);
+  // const [musicEnabled, setMusicEnabled] = useState(false); // REMOVED local state
 
-  // 🔹 resources
-  const sounds = useMemo(() => createSounds(), []);
+// 🔹 resources
+  // const sounds = useMemo(() => createSounds(), []); // ❌ Use global sounds
   const effects = useMemo(() => createEffects(), []);
 
   // 🔹 refs for animation
@@ -49,16 +49,7 @@ export default function Game({ mode, onBack, playerNames, setPlayerNames, myIden
     return () => tl.kill(); // Cleanup
   }, [roomId]); 
 
-  // 🎵 Audio Effects
-  useLayoutEffect(() => {
-    if (musicEnabled) {
-      sounds.music.play().catch(e => console.log("Audio play failed", e));
-    } else {
-      sounds.music.pause();
-    }
-    return () => sounds.music.pause(); 
-  }, [musicEnabled, sounds]);
-
+  // 🎵 Audio Effects (Win Sound only - local)
   useLayoutEffect(() => {
     if (winner && sounds.winSound) {
         sounds.winSound.currentTime = 0;
@@ -155,6 +146,36 @@ export default function Game({ mode, onBack, playerNames, setPlayerNames, myIden
                     </div>
                 </div>
 
+                {/* Audio Toggle in Lobby */}
+                <button 
+                    onClick={toggleMusic}
+                    style={{ 
+                        background: "transparent", 
+                        border: "1px solid rgba(255,255,255,0.3)", 
+                        borderRadius: "50px",
+                        cursor: "pointer", 
+                        padding: "8px 16px",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "8px",
+                        margin: "1rem auto 0",
+                        color: "#ddd",
+                        fontSize: "0.9rem"
+                    }}
+                >
+                    {musicEnabled ? (
+                        <>
+                            <img width="20" height="20" src="https://img.icons8.com/ios/50/high-volume--v1.png" alt="Music On" style={{ filter: "invert(1)" }} />
+                            <span>Music On</span>
+                        </>
+                    ) : (
+                        <>
+                            <img width="20" height="20" src="https://img.icons8.com/ios/50/mute--v1.png" alt="Music Off" style={{ filter: "invert(0.5)" }} />
+                            <span>Music Off</span>
+                        </>
+                    )}
+                </button>
+
                 <button onClick={onBack} style={{ background: "transparent", color: "#666", marginTop: "1rem", border: "none", cursor: "pointer" }}>
                     ← Back to Home
                 </button>
@@ -176,17 +197,6 @@ export default function Game({ mode, onBack, playerNames, setPlayerNames, myIden
         <header className="header" ref={headerRef} style={{ width: "100%", maxWidth: "400px" }}>
           <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
              <button onClick={onBack} style={{ padding: '0.5rem 1rem' }}>← Back</button>
-             <button 
-                onClick={() => setMusicEnabled(!musicEnabled)}
-                style={{ background: "transparent", border: "none", cursor: "pointer", padding: "0 10px" }}
-                title={musicEnabled ? "Mute Music" : "Play Music"}
-             >
-                {musicEnabled ? (
-                    <img width="30" height="30" src="https://img.icons8.com/ios/50/high-volume--v1.png" alt="Music On" style={{ filter: "invert(1)" }} />
-                ) : (
-                    <img width="30" height="30" src="https://img.icons8.com/ios/50/mute--v1.png" alt="Music Off" style={{ filter: "invert(1)" }} />
-                )}
-            </button>
           </div>
 
           <h1>
@@ -204,7 +214,12 @@ export default function Game({ mode, onBack, playerNames, setPlayerNames, myIden
           </p>
         </header>
 
-        <div ref={boardRef}>
+        <div ref={boardRef} style={{
+            transition: "all 0.5s ease",
+            borderRadius: "10px",
+            // Glow effect based on current player
+            boxShadow: !winner ? (currentPlayer === "X" ? "0 0 30px rgba(0, 255, 255, 0.3)" : "0 0 30px rgba(255, 0, 0, 0.3)") : "none"
+        }}>
           {/* Only show board if offline, ai, OR (online and in room) */}
           {(mode !== "online" || roomId) && (
               <Board
@@ -215,7 +230,7 @@ export default function Game({ mode, onBack, playerNames, setPlayerNames, myIden
           )}
         </div>
 
-      {winner && <WinModal winner={winnerName} onReplay={replayGame} />}
+      {winner && <WinModal winner={winnerName} onReplay={replayGame} onExit={onBack} />}
     </div>
   );
 }
