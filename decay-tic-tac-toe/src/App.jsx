@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import Home from "./components/Home";
 import Game from "./components/Game";
 import Welcome from "./components/Welcome";
+import About from "./components/About";
 import { createSounds } from "./game/sounds";
 import "./styles/board.css";
 
@@ -22,7 +23,7 @@ export default function App() {
       if (musicEnabled && sounds.music.paused) {
         sounds.music.play()
             .then(() => {}) // Silent success
-            .catch(e => {}); // Silent failure (will retry)
+            .catch(() => {}); // Silent failure (will retry)
       }
       // Remove listeners only if audio actually starts playing
       if (!sounds.music.paused) {
@@ -71,12 +72,15 @@ export default function App() {
     <div className="app">
       {!playerName ? (
          <Welcome onComplete={setPlayerName} />
+      ) : view === "about" ? (
+         <About onBack={goHome} />
       ) : view === "home" ? (
         <Home 
             onStart={startGame} 
             playerName={playerName} 
             difficulty={difficulty}
             setDifficulty={setDifficulty}
+            onAbout={() => setView("about")}
         />
       ) : (
         <Game 
