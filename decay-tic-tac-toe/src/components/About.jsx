@@ -1,6 +1,6 @@
 import React from "react";
 import Globe from "./react-bits/Globe";
-import "../styles/about.css";
+import "../Styles/about.css";
 
 const About = ({ onBack }) => {
   return (

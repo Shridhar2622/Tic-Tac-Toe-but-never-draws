@@ -5,7 +5,7 @@ import WinModal from "./WinModal";
 import { useGame } from "../game/useGame";
 import { createSounds } from "../game/sounds";
 import { createEffects } from "../game/effects";
-import "../styles/board.css";
+import "../Styles/board.css";
 
 export default function Game({ mode, onBack, playerNames, setPlayerNames, myIdentity, sounds, difficulty }) {
   // 🔹 game state

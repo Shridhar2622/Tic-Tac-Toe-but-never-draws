@@ -4,7 +4,7 @@ import Game from "./components/Game";
 import Welcome from "./components/Welcome";
 import About from "./components/About";
 import { createSounds } from "./game/sounds";
-import "./styles/board.css";
+import "./Styles/board.css";
 
 export default function App() {
   const [playerName, setPlayerName] = useState("");
