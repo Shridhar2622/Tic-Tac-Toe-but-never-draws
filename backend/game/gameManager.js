@@ -41,22 +41,24 @@ function makeMove(roomId, playerId, index) {
   room.board[index] = symbol;
   room.moves.push(index);
 
-  // Check Winner FIRST (Before Decay) (Win Priority)
+  // 1. Determine Decay Logic FIRST
+  let isDecaying = false;
+  let decayedIndex = -1;
+
+  if (room.moves.length > 6) {
+      isDecaying = true;
+      decayedIndex = room.moves[0]; // Get the index of the piece to remove
+      room.moves.shift();           // Remove from moves list
+      room.board[decayedIndex] = null; // Remove from board logic
+  }
+
+  // 2. Check Winner on Final Board State
   checkWinner(room);
   
-  // If winner, do NOT decay. The game ends with the extra piece.
-  if (room.winner) {
-      room.currentPlayer = symbol === "X" ? "O" : "X"; // Switch turn (doesn't matter much)
-      return room;
+  // 3. Update Turn
+  if (!room.winner) {
+      room.currentPlayer = symbol === "X" ? "O" : "X";
   }
-
-  // If NO winner, THEN apply Decay Logic
-  if (room.moves.length > 6) {
-    const removedIndex = room.moves.shift();
-    room.board[removedIndex] = null;
-  }
-
-  room.currentPlayer = symbol === "X" ? "O" : "X";
 
   return room;
 }

@@ -13,6 +13,7 @@ export default function Game({ mode, onBack, playerNames, setPlayerNames, myIden
   const [moves, setMoves] = useState([]);
   const [currentPlayer, setCurrentPlayer] = useState("X");
   const [winner, setWinner] = useState(null);
+  const [viewingBoard, setViewingBoard] = useState(false); // New state to toggle mode
   
   // 🔹 Decay Warning Logic
   const blinkIndex = (difficulty === "easy" && moves.length >= 6) ? moves[0].index : null;
@@ -72,6 +73,7 @@ export default function Game({ mode, onBack, playerNames, setPlayerNames, myIden
     setBoard(Array(9).fill(null));
     setMoves([]);
     setWinner(null);
+    setViewingBoard(false);
     setCurrentPlayer("X");
     
     if (mode === "online") {
@@ -221,7 +223,54 @@ export default function Game({ mode, onBack, playerNames, setPlayerNames, myIden
           )}
         </div>
 
-      {winner && <WinModal winner={winnerName} onReplay={replayGame} onExit={onBack} />}
+      {/* Modal or Floating Controls */}
+      {winner && !viewingBoard && (
+          <WinModal 
+            winner={winnerName} 
+            onReplay={replayGame} 
+            onExit={onBack} 
+            onMinimize={() => setViewingBoard(true)}
+          />
+      )}
+
+      {winner && viewingBoard && (
+          <div style={{
+              position: "fixed",
+              bottom: "20px",
+              left: "50%",
+              transform: "translateX(-50%)",
+              background: "#1a1d23",
+              padding: "10px 20px",
+              borderRadius: "50px",
+              border: "1px solid rgba(255,255,255,0.1)",
+              display: "flex",
+              gap: "1rem",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
+              zIndex: 100,
+              animation: "fadeIn 0.3s ease-out"
+          }}>
+              <button 
+                onClick={replayGame}
+                style={{
+                    background: "#00ff88", color: "#000", border: "none",
+                    padding: "8px 20px", borderRadius: "30px", fontWeight: "bold", cursor: "pointer",
+                    display: "flex", alignItems: "center", gap: "8px"
+                }}
+              >
+                  <img width="20" height="20" src="https://img.icons8.com/ios/50/repeat.png" alt="repeat" />
+                  Play Again
+              </button>
+              <button 
+                onClick={onBack}
+                style={{
+                    background: "transparent", color: "#fff", border: "1px solid #444",
+                    padding: "8px 20px", borderRadius: "30px", cursor: "pointer"
+                }}
+              >
+                  Exit
+              </button>
+          </div>
+      )}
     </div>
   );
 }

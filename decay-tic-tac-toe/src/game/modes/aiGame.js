@@ -40,42 +40,53 @@ export function createAiGame({
     moveSound.currentTime = 0;
     moveSound.play();
 
-    // 1. Check Win FIRST (Before Decay) (Win Priority)
-    const w = checkWinner(newBoard);
-    if (w) {
-         setWinner(w);
-         setBoard(newBoard);
-         setMoves(newMoves);
-         setCurrentPlayer(player === "X" ? "O" : "X");
-         return; // Stop here, no decay
+    // 1. Prepare Next State Logic
+    let finalBoard = [...newBoard];
+    let finalMoves = [...newMoves];
+    let decayedPieceIndex = null;
+    let isDecaying = false;
+
+    // Check decay
+    if (finalMoves.length > 6) {
+        isDecaying = true;
+        const oldestMove = finalMoves[0];
+        decayedPieceIndex = oldestMove.index;
+        
+        finalBoard[decayedPieceIndex] = null;
+        finalMoves.shift();
     }
 
-    // 2. If No Win, Check Decay
-    if (newMoves.length > 6) {
-      const removed = newMoves[0];
-      const cell = document.querySelector(`.cell[data-index="${removed.index}"]`);
-      const symbol = cell?.querySelector(".symbol");
+    // 2. Check Win on FINAL board
+    const w = checkWinner(finalBoard);
 
-      if (symbol) {
-          gsap.to(symbol, {
-              scale: 1.4, opacity: 0, duration: 0.2, ease: "power2.in",
-              onComplete: () => {
-                  if (popSound) { popSound.currentTime = 0; popSound.play(); }
-                  if (spawnParticles) spawnParticles(cell, "explode");
+    // 3. Commit State
+    const commitState = () => {
+         setWinner(w);
+         setBoard(finalBoard);
+         setMoves(finalMoves);
+         if (!w) {
+             setCurrentPlayer(player === "X" ? "O" : "X");
+         }
+    };
 
-                  // Commit state changes after animation (Decay happens here)
-                  commitDecay(newMoves, newBoard, player);
-              }
-          });
-      } else {
-           // Fallback
-           commitDecay(newMoves, newBoard, player);
-      }
+    if (isDecaying) {
+        const cell = document.querySelector(`.cell[data-index="${decayedPieceIndex}"]`);
+        const symbol = cell?.querySelector(".symbol");
+
+        if (symbol) {
+             gsap.to(symbol, {
+                 scale: 1.4, opacity: 0, duration: 0.2, ease: "power2.in",
+                 onComplete: () => {
+                     if (popSound) { popSound.currentTime = 0; popSound.play(); }
+                     if (spawnParticles) spawnParticles(cell, "explode");
+                     commitState();
+                 }
+             });
+        } else {
+             commitState();
+        }
     } else {
-       // No decay, immediate update
-       setBoard(newBoard);
-       setMoves(newMoves);
-       setCurrentPlayer(player === "X" ? "O" : "X");
+         commitState();
     }
   }
 
@@ -165,15 +176,12 @@ function simulateState(board, moves, index, player) {
     newBoard[index] = player;
     newMoves.push({ index, player });
 
-    // New Rule: If this creates a win, NO decay happens.
-    if (checkWinner(newBoard)) {
-        return { nextBoard: newBoard, nextMoves: newMoves };
-    }
-
+    // Enforce Rule: Decay happens BEFORE checking win.
     if (newMoves.length > 6) {
         const removed = newMoves.shift();
         newBoard[removed.index] = null;
     }
 
+    // Now check win (implicitly handled by the caller examining newBoard)
     return { nextBoard: newBoard, nextMoves: newMoves };
 }

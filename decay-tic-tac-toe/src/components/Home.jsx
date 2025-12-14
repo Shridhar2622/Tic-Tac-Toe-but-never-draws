@@ -97,30 +97,84 @@ export default function Home({ onStart, playerName, difficulty, setDifficulty })
       {/* Offline Name Modal Overlay */}
       {showOfflineModal && (
           <div style={{
-              position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", zIndex: 100,
-              display: "flex", justifyContent: "center", alignItems: "center"
-          }}>
-              <div style={{ background: "#222", padding: "2rem", borderRadius: "12px", border: "1px solid #444", width: "90%", maxWidth: "400px" }}>
-                  <h2 style={{ marginTop: 0 }}>Enter Player Names</h2>
-                  <div style={{ marginBottom: "1rem" }}>
-                      <label style={{ display: "block", textAlign: "left", marginBottom: "0.5rem", color: "#888" }}>Player 1 (X)</label>
+              position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 100,
+              display: "flex", justifyContent: "center", alignItems: "center", backdropFilter: "blur(5px)"
+          }} onClick={() => setShowOfflineModal(false)}>
+              
+              <div style={{ 
+                  background: "#1a1d23", padding: "2.5rem", borderRadius: "16px", border: "1px solid rgba(255,255,255,0.1)", 
+                  width: "90%", maxWidth: "420px", boxShadow: "0 10px 40px rgba(0,0,0,0.6)", position: "relative",
+                  animation: "fadeIn 0.2s ease-out"
+              }} onClick={e => e.stopPropagation()}>
+                  
+                  <h2 style={{ 
+                      marginTop: 0, marginBottom: "1.5rem", fontSize: "1.5rem", color: "#fff", fontWeight: "600"
+                  }}>
+                      Enter Player Names
+                  </h2>
+                  
+                  {/* Player 1 Input */}
+                  <div style={{ marginBottom: "1.2rem", textAlign: "left" }}>
+                      <label style={{ display: "block", marginBottom: "0.5rem", color: "#ccc", fontSize: "0.9rem" }}>
+                          Player 1 (X)
+                      </label>
                       <input 
                         value={p1Name} 
                         onChange={e => setP1Name(e.target.value)} 
-                        style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "none", background: "#333", color: "white" }}
+                        autoFocus
+                        style={{ 
+                            width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #444", 
+                            background: "#2a2e37", color: "white", outline: "none", fontSize: "1rem"
+                        }}
+                        onFocus={e => e.target.style.borderColor = "#888"}
+                        onBlur={e => e.target.style.borderColor = "#444"}
                       />
                   </div>
-                  <div style={{ marginBottom: "2rem" }}>
-                      <label style={{ display: "block", textAlign: "left", marginBottom: "0.5rem", color: "#888" }}>Player 2 (O)</label>
+                  
+                  {/* Player 2 Input */}
+                  <div style={{ marginBottom: "2rem", textAlign: "left" }}>
+                      <label style={{ display: "block", marginBottom: "0.5rem", color: "#ccc", fontSize: "0.9rem" }}>
+                          Player 2 (O)
+                      </label>
                       <input 
                         value={p2Name} 
                         onChange={e => setP2Name(e.target.value)} 
-                        style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "none", background: "#333", color: "white" }}
+                        style={{ 
+                            width: "100%", padding: "12px", borderRadius: "8px", border: "1px solid #444", 
+                            background: "#2a2e37", color: "white", outline: "none", fontSize: "1rem"
+                        }}
+                        onFocus={e => e.target.style.borderColor = "#888"}
+                        onBlur={e => e.target.style.borderColor = "#444"}
                       />
                   </div>
+                  
+                  {/* Action Buttons */}
                   <div style={{ display: "flex", gap: "1rem" }}>
-                      <button onClick={() => setShowOfflineModal(false)} style={{ flex: 1, background: "#444", color: "white" }}>Cancel</button>
-                      <button onClick={handleOfflineStart} style={{ flex: 1, background: "#6644ff", color: "white" }}>Start Game</button>
+                      <button 
+                        onClick={() => setShowOfflineModal(false)} 
+                        style={{ 
+                            flex: 1, padding: "12px", background: "transparent", color: "#aaa", 
+                            border: "1px solid #444", borderRadius: "8px", cursor: "pointer", fontSize: "0.95rem",
+                            transition: "all 0.2s"
+                        }}
+                        onMouseEnter={e => {e.target.style.background = "#2a2e37"; e.target.style.color = "#fff"}}
+                        onMouseLeave={e => {e.target.style.background = "transparent"; e.target.style.color = "#aaa"}}
+                      >
+                          Cancel
+                      </button>
+                      <button 
+                        onClick={handleOfflineStart} 
+                        style={{ 
+                            flex: 2, padding: "12px", 
+                            background: "#fff", color: "#000", border: "none", borderRadius: "8px", 
+                            cursor: "pointer", fontWeight: "bold", fontSize: "0.95rem",
+                            transition: "all 0.2s"
+                        }}
+                        onMouseEnter={e => e.target.style.background = "#ddd"}
+                        onMouseLeave={e => e.target.style.background = "#fff"}
+                      >
+                          Start Game
+                      </button>
                   </div>
               </div>
           </div>
