@@ -11,7 +11,7 @@ export function useGame(mode, config) {
     setPlayerNames, myIdentity 
   } = config;
 
-  const socket = useMemo(() => (mode === "online" ? io("http://localhost:4000") : null), [mode]);
+  const socket = useMemo(() => (mode === "online" ? io(import.meta.env.VITE_API_URL || "http://localhost:4000") : null), [mode]);
 
   // 1. Connection Lifecycle (Only runs when mode changes)
   useEffect(() => {

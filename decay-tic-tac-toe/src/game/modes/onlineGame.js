@@ -4,7 +4,7 @@ import gsap from "gsap";
 let socket;
 function getSocket() {
   if (!socket) {
-    socket = io("http://localhost:4000");
+    socket = io(import.meta.env.VITE_API_URL || "http://localhost:4000");
   }
   return socket;
 }
